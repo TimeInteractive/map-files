@@ -1,15 +1,12 @@
-Map Files from Time Interactives
-=========
-
-Make topoJSON files from SHP files with baked-in demographic data
+Make topoJSON files from SHP files with baked-in Census data
 
 ## Why?
 
-Many interactive maps need data on population or other Census measures for each state or county. It's annoying to load this in a separate file and then match it to the geographic units based on FIPS code.
+Many interactive maps need data on population or other Census measures for each state or county. It's annoying to load this in a separate file and then match it to the geographic units based on FIPS codes.
 
 ## So you solved the problem all by yourself?
 
-Heavens no. We [asked a question](https://groups.google.com/forum/#!topic/d3-js/a6VdcMv0VmU) and @mbostock [created a beautiful example](http://bl.ocks.org/mbostock/6320825) in about five minutes. This script takes a slightly different tack, however, because it's hard to find SHP files that have exactly the variables you want baked in already, and those that do often don't have borders clips to land boundaries. So this script makes regular topojson files and then enriches them with Census data.
+Heavens no. We [asked a question](https://groups.google.com/forum/#!topic/d3-js/a6VdcMv0VmU) and @mbostock [created a beautiful example](http://bl.ocks.org/mbostock/6320825) in about five minutes. This script takes a slightly different tack, however, because it's hard to find SHP files that have exactly the variables you want baked in already, and those that do often don't have borders clipped to land boundaries. So this script makes regular topojson files and then enriches them with Census data.
 
 ## Yeah yeah, how do I use it:
 
