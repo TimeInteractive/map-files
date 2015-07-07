@@ -1,6 +1,6 @@
 var fs = require("fs");
 var args = require('minimist')(process.argv.slice(2));
-var streamCSV = require("streamCSV");
+var streamCSV = require("node-stream-csv");
 
 var properties = require("./census/properties.json");
 var fips = require("./census/fips.json");
@@ -32,13 +32,25 @@ streamCSV({
 	    	var geometries = geography.objects[geo_type].geometries;
 	    	geometries.forEach(function(geometry) {
 	    		if (!geometry.properties) {
-	    			geometry.properties = {};
+                    return;
 	    		}
+                if (!fips[geometry.properties.st]) {
+                    //usually PR
+                    //console.log("Couldn't find a FIPS code matching", geometry.properties.st);
+                    return;
+                }
 	    		// they all have a FIPS code, so let's add state name and abbr
 	    		geometry.properties.state = fips[geometry.properties.st][0];
 	    		geometry.properties.abbr = fips[geometry.properties.st][1];
 
 	    		//console.log(geometry);
+                if (!index[geometry.id]) {
+                    // usually Puerto Rico
+                    //console.log("Couldn't find ID", geometry.id, "in the index (" + geometry.properties.st + ")");
+                    return;
+                }
+
+
     			geometry.properties.fips = index[geometry.id].fips;
     			if (args.properties) {
     				args.properties.split(",").forEach(function(prop) {
@@ -53,7 +65,7 @@ streamCSV({
 	    	});
 	    }
 	    fs.writeFileSync("./topojson/rich_" + args._[0], JSON.stringify(geography));
-
+        console.log("Wrote your file to " + "./topojson/rich_" + args._[0]);
 
     }       
 );

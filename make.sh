@@ -54,7 +54,7 @@ do
 				-q 1e5 \
 				-s 1 \
 				--id-property=GEOID \
-				-p fips=STATEFP,name=NAME \
+				-p st=STATEFP,name=NAME \
 				--out="../topojson/$option.topo.json" \
 				-- $option="$basename.shp"
 		break
@@ -115,4 +115,4 @@ myprops="${myprops%?}";
 
 echo "You chose $myprops";
 
-node index.js "$topo_file" --properties="$myprops"
+node add_census.js "$topo_file" --properties="$myprops"
