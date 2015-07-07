@@ -54,11 +54,10 @@ streamCSV({
     			geometry.properties.fips = index[geometry.id].fips;
     			if (args.properties) {
     				args.properties.split(",").forEach(function(prop) {
-    					prop = prop.toLowerCase();
     					if (index[geometry.id].hasOwnProperty(prop)) {
     						geometry.properties[prop] = index[geometry.id][prop];
     					} else {
-    						console.log("Couldn't find a value for '" + prop + "' for " + geometry.properties.fips);
+    						console.log("Couldn't find a value for '" + prop + "' for " + geometry.properties.fips, " You might want to check case.");
     					}
     				});
     			}
