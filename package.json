@@ -4,9 +4,10 @@
   "description": "Soup-to-nuts scripts for generating topoJSON with demographic data baked in",
   "main": "make.sh",
   "dependencies": {
+    "inquirer": "^0.9.0",
     "minimist": "^1.1.1",
     "node-stream-csv": "0.0.2",
-    "topojson": "^1.3.0"
+    "topojson": "^1.6.19"
   },
   "devDependencies": {},
   "scripts": {

@@ -2,7 +2,7 @@
 
 path=""
 PS3="Please choose a map type:"
-select option in states counties congressional
+select option in states counties congressional PUMAs
 do
     case $option in
         states) 
@@ -17,20 +17,31 @@ do
             path="http://www2.census.gov/geo/tiger/GENZ2014/shp/cb_2014_us_cd114_500k.zip"
             break
             ;; 
+        PUMAs)
+            path="../shp/USPUMAs.zip"
+            break
+            ;; 
         *) exit;;
     esac
 done
 
 #download and extract the SHP file we need
 mkdir -p topojson;
-mkdir -p shp; cd shp;
-echo "Downloading $path";
-curl -# -O $path;
-filename=${path##*/}
-unzip "$filename";
+mkdir -p temp; cd temp;
 
-basename=${filename%.zip}
-
+#PUMAs.zip is local
+if [[ "$option" != 'PUMAs' ]]; then
+	echo "Downloading $path";
+	curl -# -O $path;
+	filename=${path##*/}
+	unzip "$filename";
+	basename=${filename%.zip}
+	id_property="GEOID"
+else
+	unzip "$path";
+	basename="USPUMAs"
+	id_property="GEOID10"
+fi
 
 #echo "What sort of quantization do you want? Default is 1e5. You can just enter '6' for 1e6 if you want."
 #read quantization
@@ -41,9 +52,9 @@ do
         pre-projected) 
 				node --max_old_space_size=8192 ../node_modules/.bin/topojson \
 				-q 1e5 \
-				-s 1 \
+				--simplify-proportion 0.25 \
 				--projection 'd3.geo.albersUsa()' \
-				--id-property=GEOID \
+				--id-property="$id_property" \
 				-p st=STATEFP,name=NAME \
 				--out="../topojson/$option.preprojected.topo.json" \
 				-- $option="$basename.shp"
@@ -52,8 +63,8 @@ do
         "not pre-projected") 
 				node --max_old_space_size=8192 ../node_modules/.bin/topojson \
 				-q 1e5 \
-				-s 1 \
-				--id-property=GEOID \
+				-s 100 \
+				--id-property="$id_property" \
 				-p st=STATEFP,name=NAME \
 				--out="../topojson/$option.topo.json" \
 				-- $option="$basename.shp"
@@ -72,47 +83,8 @@ fi
 echo "$topo_file"
 
 cd ..
-rm -rf shp
+rm -rf temp
 
+#let's tell the Node scripts what source of data to use
 
-#now let's add some properties from the Census tables. First we'll load them from the JSON file
-
-PROPERTIES=()
-
-re=": \"(.*)\""
-while IFS='' read -r line || [[ -n $line ]]; do
-	if [[ $line =~ $re ]]; then
-        name="${BASH_REMATCH[1]}"
-        PROPERTIES+=($name);
-    fi
-done < "census/properties.json"
-
-menu() {
-    echo "Avaliable options:"
-    for i in ${!PROPERTIES[@]}; do 
-        printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${PROPERTIES[i]}"
-    done
-    [[ "$msg" ]] && echo "$msg"; :
-}
-
-prompt="Check an option (again to uncheck, ENTER when done): "
-while menu && read -rp "$prompt" num && [[ "$num" ]]; do
-    [[ "$num" != *[![:digit:]]* ]] &&
-    (( num > 0 && num <= ${#PROPERTIES[@]} )) ||
-    { msg="Invalid option: $num"; continue; }
-    ((num--)); msg="${PROPERTIES[num]} was ${choices[num]:+un}checked"
-    [[ "${choices[num]}" ]] && choices[num]="" || choices[num]="+"
-done
-
-myprops=""
-msg=""
-for i in ${!PROPERTIES[@]}; do 
-    [[ "${choices[i]}" ]] && { myprops+="${PROPERTIES[i]},"; }
-done
-
-#remove trailing comma
-myprops="${myprops%?}";
-
-echo "You chose $myprops";
-
-node add_census.js "$topo_file" --properties="$myprops"
+node add_census.js "$topo_file" --type=$option
